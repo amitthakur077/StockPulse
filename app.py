@@ -59,41 +59,36 @@ col1, col2 = st.columns([3, 2])
 
 with col1:
     st.markdown(
-        """
-        <div class="glass-card">
-            <h3>🚀 Welcome to StockPulse</h3>
-            <p>StockPulse is a lightweight, local-first stock intelligence tool. By utilizing cached public queries, 
-            it provides live technical analysis, interactive visualizations, and account tracking—all completely free of cost.</p>
-            
-            <h4>✨ Core Capabilities:</h4>
-            <ul>
-                <li><b>Market Dashboard</b>: Real-time stock querying with interactive candlestick charts, volumes, and standard overlays (SMA/EMA).</li>
-                <li><b>Technical Indicators</b>: In-depth charts for <b>RSI</b> and <b>MACD</b> convergence, giving you insight into momentum and trends.</li>
-                <li><b>Historical Exporter</b>: Review tabular price logs and instantly download historical stock logs in raw CSV formats.</li>
-                <li><b>Comparative Analysis</b>: Chart normalized percentage returns of up to 5 stocks concurrently to compare index-beating performances.</li>
-                <li><b>Watchlist Sparklines</b>: Build stock watchlists showing recent 5-day mini-trends inside clean cards.</li>
-                <li><b>Portfolio Manager</b>: Record simulated BUY/SELL transactions to automatically compute live profits/losses, returns on investment, and sector allocations.</li>
-            </ul>
-        </div>
-        """,
+        """<div class="glass-card">
+    <h3>🚀 Welcome to StockPulse</h3>
+    <p>StockPulse is a lightweight, local-first stock intelligence tool. By utilizing cached public queries, 
+    it provides live technical analysis, interactive visualizations, and account tracking—all completely free of cost.</p>
+    <h4>✨ Core Capabilities:</h4>
+    <ul>
+        <li><b>Market Dashboard</b>: Real-time stock querying with interactive candlestick charts, volumes, and standard overlays (SMA/EMA).</li>
+        <li><b>Technical Indicators</b>: In-depth charts for <b>RSI</b> and <b>MACD</b> convergence, giving you insight into momentum and trends.</li>
+        <li><b>Historical Exporter</b>: Review tabular price logs and instantly download historical stock logs in raw CSV formats.</li>
+        <li><b>Comparative Analysis</b>: Chart normalized percentage returns of up to 5 stocks concurrently to compare index-beating performances.</li>
+        <li><b>Watchlist Sparklines</b>: Build stock watchlists showing recent 5-day mini-trends inside clean cards.</li>
+        <li><b>Portfolio Manager</b>: Record simulated BUY/SELL transactions to automatically compute live profits/losses, returns on investment, and sector allocations.</li>
+    </ul>
+</div>""",
         unsafe_allow_html=True
     )
 
 with col2:
     st.markdown(
-        """
-        <div class="glass-card">
-            <h3>🔒 Secure, Local-First Account Management</h3>
-            <p>To use personalization features like your custom <b>Watchlist</b> or <b>Portfolio Tracker</b>, 
-            you need a free local account. Creating an account is easy:</p>
-            <ol>
-                <li>Navigate to the <b>Profile</b> page in the sidebar.</li>
-                <li>Register a new username and password.</li>
-                <li>Log in! Your settings, transactions, and tickers will save inside your local database.</li>
-            </ol>
-            <p><i>Your credentials are fully secure and hashed locally on your computer—never sent to any external server.</i></p>
-        </div>
-        """,
+        """<div class="glass-card">
+    <h3>🔒 Secure, Local-First Account Management</h3>
+    <p>To use personalization features like your custom <b>Watchlist</b> or <b>Portfolio Tracker</b>, 
+    you need a free local account. Creating an account is easy:</p>
+    <ol>
+        <li>Navigate to the <b>Profile</b> page in the sidebar.</li>
+        <li>Register a new username and password.</li>
+        <li>Log in! Your settings, transactions, and tickers will save inside your local database.</li>
+    </ol>
+    <p><i>Your credentials are fully secure and hashed locally on your computer—never sent to any external server.</i></p>
+</div>""",
         unsafe_allow_html=True
     )
     

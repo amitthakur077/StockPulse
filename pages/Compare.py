@@ -11,6 +11,8 @@ from src.utils import inject_custom_css, display_sidebar_auth
 import src.stock_api as api
 import src.analysis as analysis
 import src.charts as charts
+import config
+
 
 # Inject CSS and sidebar authentication state
 inject_custom_css()
