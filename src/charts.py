@@ -262,3 +262,130 @@ def plot_sparkline(df: pd.DataFrame) -> go.Figure:
         width=120
     )
     return fig
+
+def plot_area_chart(df: pd.DataFrame, title: str = "Market Performance") -> go.Figure:
+    """
+    Renders a premium Area Chart with translucent color gradient filling.
+    """
+    if df.empty or "Close" not in df.columns:
+        return go.Figure()
+        
+    prices = df["Close"].tolist()
+    is_up = prices[-1] >= prices[0]
+    line_color = COLORS["success"] if is_up else COLORS["danger"]
+    fill_color = "rgba(0, 230, 118, 0.08)" if is_up else "rgba(255, 51, 102, 0.08)"
+    
+    fig = go.Figure()
+    fig.add_trace(go.Scatter(
+        x=df.index,
+        y=df["Close"],
+        mode="lines",
+        name="Price",
+        line=dict(color=line_color, width=2.5),
+        fill='tozeroy',
+        fillcolor=fill_color
+    ))
+    
+    _apply_dark_layout(fig, title, y_title="Value", show_legend=False)
+    fig.update_layout(
+        xaxis=dict(showgrid=True, gridcolor="rgba(255, 255, 255, 0.03)"),
+        yaxis=dict(showgrid=True, gridcolor="rgba(255, 255, 255, 0.03)")
+    )
+    return fig
+
+def plot_sentiment_gauge(value: int) -> go.Figure:
+    """
+    Renders a premium speedometer gauge indicating market sentiment.
+    """
+    status = "Neutral"
+    color = COLORS["warning"]
+    if value >= 70:
+        status = "Extreme Greed"
+        color = COLORS["success"]
+    elif value >= 55:
+        status = "Greed / Bullish"
+        color = COLORS["success"]
+    elif value <= 30:
+        status = "Extreme Fear"
+        color = COLORS["danger"]
+    elif value <= 45:
+        status = "Fear / Bearish"
+        color = COLORS["danger"]
+        
+    fig = go.Figure(go.Indicator(
+        mode = "gauge+number",
+        value = value,
+        domain = {'x': [0, 1], 'y': [0, 1]},
+        gauge = {
+            'axis': {'range': [0, 100], 'tickwidth': 1, 'tickcolor': COLORS["text_secondary"], 'nticks': 5},
+            'bar': {'color': color, 'thickness': 0.25},
+            'bgcolor': 'rgba(255, 255, 255, 0.02)',
+            'borderwidth': 1,
+            'bordercolor': COLORS["border_color"],
+            'steps': [
+                {'range': [0, 30], 'color': 'rgba(255, 51, 102, 0.1)'},
+                {'range': [30, 70], 'color': 'rgba(255, 183, 3, 0.1)'},
+                {'range': [70, 100], 'color': 'rgba(0, 230, 118, 0.1)'}
+            ],
+            'threshold': {
+                'line': {'color': "#ffffff", 'width': 3},
+                'thickness': 0.75,
+                'value': value
+            }
+        }
+    ))
+    
+    fig.update_layout(
+        title={
+            'text': f"Sentiment: <b>{status}</b>",
+            'y': 0.15,
+            'x': 0.5,
+            'xanchor': 'center',
+            'font': {'size': 14, 'color': '#ffffff', 'family': config.UI_FONTS}
+        },
+        paper_bgcolor='rgba(0,0,0,0)',
+        plot_bgcolor='rgba(0,0,0,0)',
+        font=dict(color=COLORS["text_primary"], family=config.UI_FONTS),
+        height=180,
+        margin=dict(l=20, r=20, t=10, b=40)
+    )
+    return fig
+
+def plot_market_heatmap(df_data: pd.DataFrame) -> go.Figure:
+    """
+    Renders a custom Plotly treemap representing market performance of major stocks.
+    """
+    if df_data.empty:
+        return go.Figure()
+        
+    df_data = df_data.copy()
+    df_data["label"] = df_data["symbol"] + "<br>" + df_data["pct_change"].apply(lambda x: f"+{x:.2f}%" if x >= 0 else f"{x:.2f}%")
+    
+    fig = px.treemap(
+        df_data,
+        path=['label'],
+        values='market_cap',
+        color='pct_change',
+        color_continuous_scale=[
+            [0, '#ff3366'],
+            [0.5, '#161b26'],
+            [1, '#00e676']
+        ],
+        color_continuous_midpoint=0.0
+    )
+    
+    fig.update_layout(
+        paper_bgcolor='rgba(0,0,0,0)',
+        plot_bgcolor='rgba(0,0,0,0)',
+        font=dict(color="#ffffff", family=config.UI_FONTS),
+        margin=dict(l=5, r=5, t=5, b=5),
+        coloraxis_showscale=False
+    )
+    
+    fig.update_traces(
+        textinfo="label",
+        hoverinfo="none",
+        marker=dict(cornerradius=4)
+    )
+    return fig
+

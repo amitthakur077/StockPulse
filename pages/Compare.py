@@ -7,7 +7,7 @@ import os
 # Ensure the root directory is in the path
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-from src.utils import inject_custom_css, display_sidebar_auth
+from src.utils import inject_custom_css, render_top_navbar
 import src.stock_api as api
 import src.analysis as analysis
 import src.charts as charts
@@ -16,7 +16,7 @@ import config
 
 # Inject CSS and sidebar authentication state
 inject_custom_css()
-display_sidebar_auth()
+render_top_navbar("Compare")
 
 st.title("⚖️ Stock Comparison Engine")
 st.markdown("Enter multiple stock symbols to compare their growth trends, metrics, and price correlation.")

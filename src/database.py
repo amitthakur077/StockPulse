@@ -8,11 +8,17 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 import config
 
 # Create SQLAlchemy engine
-# connect_args={"check_same_thread": False} is required for SQLite in multithreaded Streamlit apps
-if config.DATABASE_URL.startswith("sqlite"):
-    engine = create_engine(config.DATABASE_URL, connect_args={"check_same_thread": False})
+db_url = config.DATABASE_URL
+# Cloud DB providers like Neon/Supabase sometimes return 'postgres://', but SQLAlchemy requires 'postgresql://'
+if db_url.startswith("postgres://"):
+    db_url = db_url.replace("postgres://", "postgresql://", 1)
+
+# connect_args={"check_same_thread": False} is required only for SQLite in multithreaded apps
+if db_url.startswith("sqlite"):
+    engine = create_engine(db_url, connect_args={"check_same_thread": False})
 else:
-    engine = create_engine(config.DATABASE_URL)
+    engine = create_engine(db_url)
+
 
 # Create session factory
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)

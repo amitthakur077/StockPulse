@@ -4,10 +4,12 @@ import streamlit as st
 from datetime import datetime, timedelta
 import sys
 import os
+import requests
 
 # Ensure the root directory is in the path
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 import config
+
 
 @st.cache_data(ttl=3600)  # Cache stock data for 1 hour to optimize performance
 def get_stock_history(symbol: str, period: str = "1y", interval: str = "1d") -> pd.DataFrame:
@@ -137,3 +139,122 @@ def validate_ticker(symbol: str) -> bool:
         return not hist.empty
     except Exception:
         return False
+
+def search_tickers_by_name(query: str) -> list[dict]:
+    """
+    Search Yahoo Finance autocomplete API for stock tickers matching a text query (name or symbol).
+    Returns a list of dicts: [{'symbol': 'AAPL', 'name': 'Apple Inc.', 'exchange': 'NMS'}]
+    """
+    query = query.strip()
+    if not query:
+        return []
+        
+    url = f"https://query2.finance.yahoo.com/v1/finance/search?q={query}&quotesCount=8&newsCount=0"
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.0.0 Safari/537.36"
+    }
+    try:
+        response = requests.get(url, headers=headers, timeout=5)
+        if response.status_code == 200:
+            data = response.json()
+            quotes = data.get("quotes", [])
+            results = []
+            for q in quotes:
+                quote_type = q.get("quoteType", "")
+                if quote_type in ["EQUITY", "ETF", "INDEX"]:
+                    results.append({
+                        "symbol": q.get("symbol"),
+                        "name": q.get("shortname", q.get("longname", q.get("symbol"))),
+                        "exchange": q.get("exchange", "N/A"),
+                        "type": quote_type
+                    })
+            return results
+    except Exception:
+        pass
+    return []
+
+@st.cache_data(ttl=600)
+def get_sector_performance() -> list[dict]:
+    """
+    Fetch live sector performance data for major sectors on NSE.
+    """
+    sectors = {
+        "Nifty IT": "^CNXIT",
+        "Nifty Auto": "^CNXAUTO",
+        "Nifty Bank": "^NSEBANK",
+        "Nifty FMCG": "^CNXFMCG",
+        "Nifty Pharma": "^CNXPHARMA",
+        "Nifty Metal": "^CNXMETAL"
+    }
+    performance = []
+    for name, ticker_symbol in sectors.items():
+        try:
+            ticker = yf.Ticker(ticker_symbol)
+            hist = ticker.history(period="5d")
+            if not hist.empty and len(hist) >= 2:
+                latest_close = hist["Close"].iloc[-1]
+                prev_close = hist["Close"].iloc[-2]
+                pct_change = ((latest_close - prev_close) / prev_close) * 100
+                performance.append({
+                    "name": name,
+                    "pct_change": pct_change
+                })
+            else:
+                performance.append({"name": name, "pct_change": 0.0})
+        except Exception:
+            performance.append({"name": name, "pct_change": 0.0})
+    return performance
+
+@st.cache_data(ttl=600)
+def get_top_gainers_losers(market: str = "IN") -> tuple[list[dict], list[dict]]:
+    """
+    Get top 5 gainers and top 5 losers for the selected market.
+    """
+    if market == "IN":
+        tickers = [
+            "RELIANCE.NS", "TCS.NS", "HDFCBANK.NS", "ICICIBANK.NS", "INFY.NS",
+            "SBIN.NS", "BHARTIARTL.NS", "ITC.NS", "LT.NS", "TATAMOTORS.NS",
+            "HINDALCO.NS", "MARUTI.NS", "NTPC.NS", "INDUSINDBK.NS", "ADANIPORTS.NS",
+            "TITAN.NS", "BAJFINANCE.NS", "WIPRO.NS", "NESTLEIND.NS"
+        ]
+    else:
+        tickers = ["AAPL", "MSFT", "GOOGL", "AMZN", "TSLA", "NVDA", "META", "NFLX", "AMD", "QCOM", "JPM", "V"]
+        
+    try:
+        # Download in a single batch (fast parallel query)
+        data = yf.download(tickers, period="5d", group_by="ticker", progress=False)
+        changes = []
+        for t in tickers:
+            try:
+                # Check if multi-index structure returned
+                if isinstance(data.columns, pd.MultiIndex):
+                    if t in data.columns.levels[0]:
+                        hist = data[t].dropna(subset=["Close"])
+                    else:
+                        continue
+                else:
+                    hist = data.dropna(subset=["Close"])
+                    
+                if len(hist) >= 2:
+                    latest_close = hist["Close"].iloc[-1]
+                    prev_close = hist["Close"].iloc[-2]
+                    price_change = latest_close - prev_close
+                    pct_change = (price_change / prev_close) * 100
+                    changes.append({
+                        "symbol": t.replace(".NS", ""),
+                        "full_symbol": t,
+                        "price": latest_close,
+                        "change": price_change,
+                        "pct_change": pct_change
+                    })
+            except Exception:
+                pass
+                
+        # Sort changes
+        changes = sorted(changes, key=lambda x: x["pct_change"], reverse=True)
+        gainers = changes[:5]
+        losers = sorted(changes, key=lambda x: x["pct_change"])[:5]
+        return gainers, losers
+    except Exception:
+        return [], []
+

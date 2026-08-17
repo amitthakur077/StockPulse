@@ -1,4 +1,8 @@
 import os
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 # Application Settings
 APP_TITLE = "📈 StockPulse"
@@ -7,22 +11,26 @@ APP_SUBTITLE = "Premium Stock Market Analysis Dashboard"
 # Directory configuration
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 
-# Database Settings
-# Defaulting to a local, serverless SQLite database (100% free)
-# Can easily be changed to a PostgreSQL connection URI here
-DB_PATH = os.path.join(BASE_DIR, "stockpulse.db")
-DATABASE_URL = os.getenv("DATABASE_URL", f"sqlite:///{DB_PATH}")
-
-# Supported Default Indices for market overview
+# Supported Default Indices for market overview (US and India)
 DEFAULT_INDICES = {
-    "^GSPC": "S&P 500",
-    "^DJI": "Dow Jones",
-    "^IXIC": "Nasdaq",
-    "^NSEI": "Nifty 50"
+    "^GSPC": "S&P 500 (US)",
+    "^IXIC": "Nasdaq (US)",
+    "^NSEI": "Nifty 50 (India)",
+    "^BSESN": "BSE Sensex (India)"
 }
 
+# Database Settings
+# First, look for DATABASE_URL in system environment/secrets (e.g. Neon/Supabase cloud URL)
+# If none found, default to a local, serverless SQLite database
+DB_PATH = os.path.join(BASE_DIR, "stockpulse.db")
+DATABASE_URL = os.getenv("DATABASE_URL")
+
+# If no cloud URL is configured in the environment, fall back to SQLite
+if not DATABASE_URL:
+    DATABASE_URL = f"sqlite:///{DB_PATH}"
+
 # Default Watchlist tickers for new users
-DEFAULT_WATCHLIST = ["AAPL", "MSFT", "GOOGL", "AMZN", "TSLA"]
+DEFAULT_WATCHLIST = ["AAPL", "MSFT", "RELIANCE.NS", "TCS.NS", "TSLA"]
 
 # Technical Indicator Defaults
 INDICATOR_DEFAULTS = {

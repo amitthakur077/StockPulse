@@ -5,14 +5,15 @@ import os
 # Ensure the root directory is in the path
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-from src.utils import inject_custom_css, display_sidebar_auth
+from src.utils import inject_custom_css, render_top_navbar
 import src.stock_api as api
 import src.indicators as indicators
 import src.charts as charts
 
 # Inject CSS and sidebar authentication state
 inject_custom_css()
-display_sidebar_auth()
+render_top_navbar("History")
+
 
 st.title("📂 Historical Stock Data Explorer")
 

@@ -8,14 +8,16 @@ import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from src.database import SessionLocal
-from src.utils import inject_custom_css, display_sidebar_auth, render_metric_card
+from src.utils import inject_custom_css, render_top_navbar, render_metric_card
+
 import src.auth as auth
 import src.stock_api as api
 import src.portfolio as port
 
 # Inject CSS and sidebar authentication state
 inject_custom_css()
-display_sidebar_auth()
+render_top_navbar("Portfolio")
+
 
 st.title("💼 Portfolio Management")
 
