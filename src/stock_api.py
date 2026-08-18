@@ -209,52 +209,53 @@ def get_sector_performance() -> list[dict]:
 def get_top_gainers_losers(market: str = "IN") -> tuple[list[dict], list[dict]]:
     """
     Get top 5 gainers and top 5 losers for the selected market.
+    Uses per-ticker individual downloads so one failure doesn't break the rest.
     """
     if market == "IN":
         tickers = [
             "RELIANCE.NS", "TCS.NS", "HDFCBANK.NS", "ICICIBANK.NS", "INFY.NS",
-            "SBIN.NS", "BHARTIARTL.NS", "ITC.NS", "LT.NS", "TATAMOTORS.NS",
-            "HINDALCO.NS", "MARUTI.NS", "NTPC.NS", "INDUSINDBK.NS", "ADANIPORTS.NS",
-            "TITAN.NS", "BAJFINANCE.NS", "WIPRO.NS", "NESTLEIND.NS"
+            "SBIN.NS", "BHARTIARTL.NS", "ITC.NS", "LT.NS",
+            "HINDALCO.NS", "MARUTI.NS", "NTPC.NS", "ADANIPORTS.NS",
+            "TITAN.NS", "BAJFINANCE.NS", "WIPRO.NS", "NESTLEIND.NS",
+            "AXISBANK.NS", "KOTAKBANK.NS", "SUNPHARMA.NS"
         ]
     else:
         tickers = ["AAPL", "MSFT", "GOOGL", "AMZN", "TSLA", "NVDA", "META", "NFLX", "AMD", "QCOM", "JPM", "V"]
-        
-    try:
-        # Download in a single batch (fast parallel query)
-        data = yf.download(tickers, period="5d", group_by="ticker", progress=False)
-        changes = []
-        for t in tickers:
-            try:
-                # Check if multi-index structure returned
-                if isinstance(data.columns, pd.MultiIndex):
-                    if t in data.columns.levels[0]:
-                        hist = data[t].dropna(subset=["Close"])
-                    else:
-                        continue
-                else:
-                    hist = data.dropna(subset=["Close"])
-                    
-                if len(hist) >= 2:
-                    latest_close = hist["Close"].iloc[-1]
-                    prev_close = hist["Close"].iloc[-2]
-                    price_change = latest_close - prev_close
-                    pct_change = (price_change / prev_close) * 100
-                    changes.append({
-                        "symbol": t.replace(".NS", ""),
-                        "full_symbol": t,
-                        "price": latest_close,
-                        "change": price_change,
-                        "pct_change": pct_change
-                    })
-            except Exception:
-                pass
-                
-        # Sort changes
-        changes = sorted(changes, key=lambda x: x["pct_change"], reverse=True)
-        gainers = changes[:5]
-        losers = sorted(changes, key=lambda x: x["pct_change"])[:5]
-        return gainers, losers
-    except Exception:
+
+    changes = []
+    for t in tickers:
+        try:
+            hist = yf.download(t, period="5d", progress=False, auto_adjust=True)
+            if hist.empty or len(hist) < 2:
+                continue
+            # Flatten MultiIndex columns if present
+            if isinstance(hist.columns, pd.MultiIndex):
+                hist.columns = hist.columns.get_level_values(0)
+            hist = hist.dropna(subset=["Close"])
+            if len(hist) < 2:
+                continue
+            latest_close = float(hist["Close"].iloc[-1])
+            prev_close = float(hist["Close"].iloc[-2])
+            if prev_close == 0:
+                continue
+            price_change = latest_close - prev_close
+            pct_change = (price_change / prev_close) * 100
+            changes.append({
+                "symbol": t.replace(".NS", "").replace(".BO", ""),
+                "full_symbol": t,
+                "price": latest_close,
+                "change": price_change,
+                "pct_change": pct_change
+            })
+        except Exception:
+            continue  # Skip silently — one bad ticker shouldn't break the list
+
+    if not changes:
         return [], []
+
+    changes_sorted = sorted(changes, key=lambda x: x["pct_change"], reverse=True)
+    gainers = changes_sorted[:5]
+    losers = sorted(changes, key=lambda x: x["pct_change"])[:5]
+    return gainers, losers
+
 

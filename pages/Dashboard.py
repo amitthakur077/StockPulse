@@ -90,13 +90,13 @@ if selected_ticker:
             st.title(f"{ticker} - {info.get('name', ticker)}")
         with col_wl2:
             if is_watched:
-                if st.button("➖ Remove from Watchlist", use_container_width=True):
+                if st.button("➖ Remove from Watchlist", width='stretch'):
                     success, msg = wl.remove_from_watchlist(db, user_id, ticker)
                     if success:
                         st.success(msg)
                         st.rerun()
             else:
-                if st.button("➕ Add to Watchlist", use_container_width=True):
+                if st.button("➕ Add to Watchlist", width='stretch'):
                     success, msg = wl.add_to_watchlist(db, user_id, ticker)
                     if success:
                         st.success(msg)
@@ -167,20 +167,20 @@ if selected_ticker:
             ma_lines[f"EMA {ema_period}"] = indicators.calculate_ema(df, ema_period)
 
         fig_price = charts.plot_candlestick(df, ma_lines, title=f"{ticker} Price Chart")
-        st.plotly_chart(fig_price, use_container_width=True)
+        st.plotly_chart(fig_price, width='stretch')
 
         fig_vol = charts.plot_volume(df, title=f"{ticker} Volume")
-        st.plotly_chart(fig_vol, use_container_width=True)
+        st.plotly_chart(fig_vol, width='stretch')
 
         tab_rsi, tab_macd = st.tabs(["📊 RSI Analysis", "📊 MACD Indicators"])
         with tab_rsi:
             fig_rsi = charts.plot_rsi(df)
             if fig_rsi:
-                st.plotly_chart(fig_rsi, use_container_width=True)
+                st.plotly_chart(fig_rsi, width='stretch')
         with tab_macd:
             fig_macd = charts.plot_macd(df)
             if fig_macd:
-                st.plotly_chart(fig_macd, use_container_width=True)
+                st.plotly_chart(fig_macd, width='stretch')
 
         st.markdown(
             f"""
@@ -246,7 +246,7 @@ else:
             
         if not nifty_df.empty:
             fig_nifty = charts.plot_area_chart(nifty_df, title="")
-            st.plotly_chart(fig_nifty, use_container_width=True)
+            st.plotly_chart(fig_nifty, width='stretch')
         else:
             st.warning("Nifty 50 historical data is unavailable.")
             
@@ -381,7 +381,7 @@ else:
         sentiment_score = int(50 + nifty_change * 15)
         sentiment_score = max(5, min(95, sentiment_score))
         fig_gauge = charts.plot_sentiment_gauge(sentiment_score)
-        st.plotly_chart(fig_gauge, use_container_width=True)
+        st.plotly_chart(fig_gauge, width='stretch')
 
     st.markdown("<br>", unsafe_allow_html=True)
 
@@ -409,7 +409,7 @@ else:
         if heatmap_data:
             df_heat = pd.DataFrame(heatmap_data).drop_duplicates(subset=["symbol"])
             fig_heat = charts.plot_market_heatmap(df_heat)
-            st.plotly_chart(fig_heat, use_container_width=True)
+            st.plotly_chart(fig_heat, width='stretch')
         else:
             st.info("Heatmap is currently loading...")
             

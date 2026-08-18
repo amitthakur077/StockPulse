@@ -73,7 +73,7 @@ if symbols_input:
             )
             
             fig_compare = charts.plot_comparison(dfs_dict, title=f"Cumulative Return Comparison ({period})")
-            st.plotly_chart(fig_compare, use_container_width=True)
+            st.plotly_chart(fig_compare, width='stretch')
             
             # ----------------- Financial Metrics Table -----------------
             st.markdown("<br><hr style='border-color: rgba(255,255,255,0.05)'><br>", unsafe_allow_html=True)
@@ -83,7 +83,7 @@ if symbols_input:
                 metrics_df = analysis.generate_comparison_table(valid_symbols)
                 
             if not metrics_df.empty:
-                st.dataframe(metrics_df, use_container_width=True, hide_index=True)
+                st.dataframe(metrics_df, width='stretch', hide_index=True)
             else:
                 st.info("Unable to compile comparative statistics.")
                 
@@ -116,6 +116,6 @@ if symbols_input:
                     coloraxis_colorbar=dict(title="Correlation")
                 )
                 
-                st.plotly_chart(fig_heat, use_container_width=True)
+                st.plotly_chart(fig_heat, width='stretch')
             else:
                 st.info("Unable to calculate correlation coefficients.")

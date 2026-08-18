@@ -165,27 +165,27 @@ def render_top_navbar(active_page: str):
         )
         
     with col_nav1:
-        if st.button("Dashboard", key="nav_dash", type="primary" if active_page == "Dashboard" else "secondary", use_container_width=True):
+        if st.button("Dashboard", key="nav_dash", type="primary" if active_page == "Dashboard" else "secondary", width='stretch'):
             st.switch_page("pages/Dashboard.py")
             
     with col_nav2:
-        if st.button("Compare", key="nav_comp", type="primary" if active_page == "Compare" else "secondary", use_container_width=True):
+        if st.button("Compare", key="nav_comp", type="primary" if active_page == "Compare" else "secondary", width='stretch'):
             st.switch_page("pages/Compare.py")
             
     with col_nav3:
-        if st.button("Watchlist", key="nav_wl", type="primary" if active_page == "Watchlist" else "secondary", use_container_width=True):
+        if st.button("Watchlist", key="nav_wl", type="primary" if active_page == "Watchlist" else "secondary", width='stretch'):
             st.switch_page("pages/Watchlist.py")
             
     with col_nav4:
-        if st.button("Portfolio", key="nav_port", type="primary" if active_page == "Portfolio" else "secondary", use_container_width=True):
+        if st.button("Portfolio", key="nav_port", type="primary" if active_page == "Portfolio" else "secondary", width='stretch'):
             st.switch_page("pages/Portfolio.py")
             
     with col_nav5:
-        if st.button("History", key="nav_hist", type="primary" if active_page == "History" else "secondary", use_container_width=True):
+        if st.button("History", key="nav_hist", type="primary" if active_page == "History" else "secondary", width='stretch'):
             st.switch_page("pages/History.py")
             
     with col_nav6:
-        if st.button("Profile", key="nav_prof", type="primary" if active_page == "Profile" else "secondary", use_container_width=True):
+        if st.button("Profile", key="nav_prof", type="primary" if active_page == "Profile" else "secondary", width='stretch'):
             st.switch_page("pages/Profile.py")
             
     with col_user:
@@ -202,7 +202,7 @@ def render_top_navbar(active_page: str):
                 unsafe_allow_html=True
             )
         else:
-            if st.button("🔐 Login", key="nav_login", use_container_width=True):
+            if st.button("🔐 Login", key="nav_login", width='stretch'):
                 st.switch_page("pages/Profile.py")
 
     st.markdown("<div style='margin-top:-5px; margin-bottom: 25px; border-bottom: 1px solid rgba(255,255,255,0.06);'></div>", unsafe_allow_html=True)

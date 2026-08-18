@@ -35,7 +35,7 @@ else:
         with col_add1:
             new_ticker = st.text_input("Enter Ticker symbol", placeholder="e.g. AMZN, TSLA, NFLX", label_visibility="collapsed").strip().upper()
         with col_add2:
-            if st.button("Add to List", use_container_width=True):
+            if st.button("Add to List", width='stretch'):
                 if new_ticker:
                     if api.validate_ticker(new_ticker):
                         success, msg = wl.add_to_watchlist(db, user_id, new_ticker)
@@ -98,13 +98,13 @@ else:
                     with col3:
                         if not hist.empty:
                             fig_spark = charts.plot_sparkline(hist)
-                            st.plotly_chart(fig_spark, use_container_width=True, config={'displayModeBar': False})
+                            st.plotly_chart(fig_spark, width='stretch', config={'displayModeBar': False})
                         else:
                             st.caption("Sparkline unavailable")
                             
                     with col4:
                         st.markdown("<br>", unsafe_allow_html=True)
-                        if st.button("🗑️ Remove", key=f"rm_{sym}", use_container_width=True):
+                        if st.button("🗑️ Remove", key=f"rm_{sym}", width='stretch'):
                             success, msg = wl.remove_from_watchlist(db, user_id, sym)
                             if success:
                                 st.success(msg)

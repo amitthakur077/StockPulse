@@ -118,7 +118,7 @@ else:
                 })
                 
             holdings_df = pd.DataFrame(holdings_rows)
-            st.dataframe(holdings_df, use_container_width=True, hide_index=True)
+            st.dataframe(holdings_df, width='stretch', hide_index=True)
             
             # ----------------- Visual Allocation Charts -----------------
             st.markdown("<br>", unsafe_allow_html=True)
@@ -140,7 +140,7 @@ else:
                     plot_bgcolor='rgba(0,0,0,0)',
                     font=dict(color=auth.st.session_state.get("text_secondary", "#a0aab2"), family="Outfit, sans-serif")
                 )
-                st.plotly_chart(fig_asset, use_container_width=True)
+                st.plotly_chart(fig_asset, width='stretch')
                 
             with col_chart2:
                 st.write("##### Sector Allocation")
@@ -158,7 +158,7 @@ else:
                     plot_bgcolor='rgba(0,0,0,0)',
                     font=dict(color="#a0aab2", family="Outfit, sans-serif")
                 )
-                st.plotly_chart(fig_sector, use_container_width=True)
+                st.plotly_chart(fig_sector, width='stretch')
 
         # ----------------- Transaction Log History -----------------
         if transactions:
@@ -177,7 +177,7 @@ else:
                 })
                 
             log_df = pd.DataFrame(log_rows)
-            st.dataframe(log_df, use_container_width=True, hide_index=True)
+            st.dataframe(log_df, width='stretch', hide_index=True)
             
     finally:
         db.close()

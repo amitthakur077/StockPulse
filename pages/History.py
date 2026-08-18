@@ -67,7 +67,7 @@ if ticker_input:
             # We reverse the dataframe to show latest dates first in the table
             table_df = df.copy()
             table_df.index = table_df.index.strftime('%Y-%m-%d')
-            st.dataframe(table_df.iloc[::-1], use_container_width=True)
+            st.dataframe(table_df.iloc[::-1], width='stretch')
             
             # ----------------- Return & Volatility Analysis -----------------
             st.markdown("<br><hr style='border-color: rgba(255,255,255,0.05)'><br>", unsafe_allow_html=True)
@@ -97,6 +97,6 @@ if ticker_input:
                 
                 # Render Returns Histogram
                 fig_dist = charts.plot_returns_dist(df, title=f"{ticker} Daily Returns Distribution Histogram")
-                st.plotly_chart(fig_dist, use_container_width=True)
+                st.plotly_chart(fig_dist, width='stretch')
             else:
                 st.info("Not enough data to calculate returns analysis.")
