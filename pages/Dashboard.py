@@ -7,6 +7,13 @@ import os
 # Ensure the root directory is in the path
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
+# st.set_page_config MUST be the very first Streamlit command
+st.set_page_config(
+    page_title="StockPulse - Dashboard",
+    page_icon="📈",
+    layout="wide"
+)
+
 from src.database import SessionLocal
 from src.utils import inject_custom_css, render_top_navbar, render_metric_card
 import src.stock_api as api
@@ -16,7 +23,7 @@ import src.auth as auth
 import src.watchlist as wl
 import src.reports as rep
 
-# Configure page settings
+# Inject CSS and render top navbar
 inject_custom_css()
 render_top_navbar("Dashboard")
 

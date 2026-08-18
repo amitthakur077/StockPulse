@@ -5,6 +5,8 @@ import os
 # Ensure the root directory is in the path
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
+st.set_page_config(page_title="StockPulse - Watchlist", page_icon="⭐", layout="wide")
+
 from src.database import SessionLocal
 from src.utils import inject_custom_css, render_top_navbar
 import src.auth as auth
@@ -12,7 +14,7 @@ import src.stock_api as api
 import src.watchlist as wl
 import src.charts as charts
 
-# Inject CSS and sidebar authentication state
+# Inject CSS and top navigation
 inject_custom_css()
 render_top_navbar("Watchlist")
 

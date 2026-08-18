@@ -5,11 +5,13 @@ import os
 # Ensure the root directory is in the path for modules import
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
+st.set_page_config(page_title="StockPulse - Profile", page_icon="👤", layout="wide")
+
 from src.database import SessionLocal
 from src.utils import inject_custom_css, render_top_navbar
 import src.auth as auth
 
-# Inject CSS and sidebar authentication state
+# Inject CSS and top navigation
 inject_custom_css()
 render_top_navbar("Profile")
 
