@@ -54,7 +54,7 @@ def get_stock_info(symbol: str) -> dict:
             "sector": info.get("sector", "N/A"),
             "industry": info.get("industry", "N/A"),
             "summary": info.get("longBusinessSummary", "No description available."),
-            "currency": info.get("currency", "USD"),
+            "currency": "INR",
             "market_cap": info.get("marketCap", None),
             "pe_ratio": info.get("trailingPE", info.get("forwardPE", None)),
             "dividend_yield": info.get("dividendYield", 0.0),
@@ -68,7 +68,7 @@ def get_stock_info(symbol: str) -> dict:
         
         # If current price is missing, try getting it from recent history
         if profile["current_price"] is None:
-            history = get_stock_history(symbol, period="1d")
+            history = get_stock_history(symbol, period="5d")
             if not history.empty:
                 profile["current_price"] = history["Close"].iloc[-1]
                 
@@ -81,7 +81,7 @@ def get_stock_info(symbol: str) -> dict:
             "sector": "N/A",
             "industry": "N/A",
             "summary": f"Could not fetch complete metadata for {symbol}.",
-            "currency": "N/A",
+            "currency": "INR",
             "market_cap": None,
             "pe_ratio": None,
             "dividend_yield": 0.0,
@@ -134,44 +134,184 @@ def validate_ticker(symbol: str) -> bool:
         return False
     try:
         ticker = yf.Ticker(symbol)
-        # Try fetching 1 day history to confirm validity
-        hist = ticker.history(period="1d")
+        hist = ticker.history(period="5d")
         return not hist.empty
     except Exception:
         return False
 
+# Curated catalog of popular Indian and US stocks with natural language search aliases
+POPULAR_STOCKS = [
+    # Indian Rail & Infra
+    {"symbol": "RVNL.NS", "name": "Rail Vikas Nigam Limited", "exchange": "NSE", "aliases": ["rail nigam", "rvnl", "rail vikas", "railway nigam", "railway", "rail"]},
+    {"symbol": "IRFC.NS", "name": "Indian Railway Finance Corporation", "exchange": "NSE", "aliases": ["irfc", "railway finance", "indian railway finance"]},
+    {"symbol": "IRCTC.NS", "name": "Indian Railway Catering & Tourism Corp", "exchange": "NSE", "aliases": ["irctc", "railway catering", "rail catering", "catering"]},
+    {"symbol": "IRCON.NS", "name": "Ircon International Limited", "exchange": "NSE", "aliases": ["ircon", "railway construction"]},
+    {"symbol": "RAILTEL.NS", "name": "RailTel Corporation of India", "exchange": "NSE", "aliases": ["railtel", "railway telecom"]},
+    {"symbol": "BEML.NS", "name": "BEML Limited", "exchange": "NSE", "aliases": ["beml", "rail coach"]},
+    {"symbol": "TITAGARH.NS", "name": "Titagarh Rail Systems", "exchange": "NSE", "aliases": ["titagarh", "rail wagon"]},
+
+    # Major Indian Equities
+    {"symbol": "RELIANCE.NS", "name": "Reliance Industries Limited", "exchange": "NSE", "aliases": ["reliance", "ril", "jio", "mukesh ambani"]},
+    {"symbol": "TCS.NS", "name": "Tata Consultancy Services", "exchange": "NSE", "aliases": ["tcs", "tata consultancy"]},
+    {"symbol": "HDFCBANK.NS", "name": "HDFC Bank Limited", "exchange": "NSE", "aliases": ["hdfc", "hdfc bank"]},
+    {"symbol": "ICICIBANK.NS", "name": "ICICI Bank Limited", "exchange": "NSE", "aliases": ["icici", "icici bank"]},
+    {"symbol": "INFY.NS", "name": "Infosys Limited", "exchange": "NSE", "aliases": ["infosys", "infy"]},
+    {"symbol": "SBIN.NS", "name": "State Bank of India", "exchange": "NSE", "aliases": ["sbi", "sbin", "state bank", "state bank of india"]},
+    {"symbol": "BHARTIARTL.NS", "name": "Bharti Airtel Limited", "exchange": "NSE", "aliases": ["airtel", "bharti airtel"]},
+    {"symbol": "ITC.NS", "name": "ITC Limited", "exchange": "NSE", "aliases": ["itc"]},
+    {"symbol": "LT.NS", "name": "Larsen & Toubro Limited", "exchange": "NSE", "aliases": ["l&t", "lt", "larsen", "larsen and toubro"]},
+    {"symbol": "TATAMOTORS.NS", "name": "Tata Motors Limited", "exchange": "NSE", "aliases": ["tata motors", "tamo", "tatamotor"]},
+    {"symbol": "TATASTEEL.NS", "name": "Tata Steel Limited", "exchange": "NSE", "aliases": ["tata steel", "tatasteel"]},
+    {"symbol": "TATAPOWER.NS", "name": "Tata Power Company", "exchange": "NSE", "aliases": ["tata power", "tatapower"]},
+    {"symbol": "MARUTI.NS", "name": "Maruti Suzuki India Limited", "exchange": "NSE", "aliases": ["maruti", "maruti suzuki", "suzuki"]},
+    {"symbol": "M&M.NS", "name": "Mahindra & Mahindra Limited", "exchange": "NSE", "aliases": ["mahindra", "m&m", "mahindra and mahindra"]},
+    {"symbol": "ADANIENT.NS", "name": "Adani Enterprises Limited", "exchange": "NSE", "aliases": ["adani enterprises", "adani ent"]},
+    {"symbol": "ADANIPORTS.NS", "name": "Adani Ports and SEZ", "exchange": "NSE", "aliases": ["adani ports", "adani port"]},
+    {"symbol": "ADANIPOWER.NS", "name": "Adani Power Limited", "exchange": "NSE", "aliases": ["adani power"]},
+    {"symbol": "ADANIGREEN.NS", "name": "Adani Green Energy", "exchange": "NSE", "aliases": ["adani green"]},
+    {"symbol": "SUNPHARMA.NS", "name": "Sun Pharmaceutical Industries", "exchange": "NSE", "aliases": ["sun pharma", "sun pharmaceutical"]},
+    {"symbol": "HINDALCO.NS", "name": "Hindalco Industries Limited", "exchange": "NSE", "aliases": ["hindalco"]},
+    {"symbol": "TITAN.NS", "name": "Titan Company Limited", "exchange": "NSE", "aliases": ["titan", "tanishq"]},
+    {"symbol": "BAJFINANCE.NS", "name": "Bajaj Finance Limited", "exchange": "NSE", "aliases": ["bajaj finance"]},
+    {"symbol": "BAJAJFINSV.NS", "name": "Bajaj Finserv Limited", "exchange": "NSE", "aliases": ["bajaj finserv"]},
+    {"symbol": "WIPRO.NS", "name": "Wipro Limited", "exchange": "NSE", "aliases": ["wipro"]},
+    {"symbol": "HCLTECH.NS", "name": "HCL Technologies Limited", "exchange": "NSE", "aliases": ["hcl", "hcl tech"]},
+    {"symbol": "NTPC.NS", "name": "NTPC Limited", "exchange": "NSE", "aliases": ["ntpc", "national thermal power"]},
+    {"symbol": "ONGC.NS", "name": "Oil & Natural Gas Corporation", "exchange": "NSE", "aliases": ["ongc"]},
+    {"symbol": "COALINDIA.NS", "name": "Coal India Limited", "exchange": "NSE", "aliases": ["coal india", "cil"]},
+    {"symbol": "POWERGRID.NS", "name": "Power Grid Corporation of India", "exchange": "NSE", "aliases": ["power grid", "powergrid"]},
+    {"symbol": "ZOMATO.NS", "name": "Zomato Limited", "exchange": "NSE", "aliases": ["zomato", "blinkit"]},
+    {"symbol": "JIOFIN.NS", "name": "Jio Financial Services", "exchange": "NSE", "aliases": ["jio financial", "jiofin"]},
+    {"symbol": "HAL.NS", "name": "Hindustan Aeronautics Limited", "exchange": "NSE", "aliases": ["hal", "hindustan aeronautics", "defence"]},
+    {"symbol": "BEL.NS", "name": "Bharat Electronics Limited", "exchange": "NSE", "aliases": ["bel", "bharat electronics"]},
+    {"symbol": "BHEL.NS", "name": "Bharat Heavy Electricals Limited", "exchange": "NSE", "aliases": ["bhel"]},
+    {"symbol": "NHPC.NS", "name": "NHPC Limited", "exchange": "NSE", "aliases": ["nhpc", "hydro power"]},
+    {"symbol": "SJVN.NS", "name": "SJVN Limited", "exchange": "NSE", "aliases": ["sjvn"]},
+    {"symbol": "SUZLON.NS", "name": "Suzlon Energy Limited", "exchange": "NSE", "aliases": ["suzlon", "wind energy"]},
+    {"symbol": "PNB.NS", "name": "Punjab National Bank", "exchange": "NSE", "aliases": ["pnb", "punjab national bank"]},
+    {"symbol": "BANKBARODA.NS", "name": "Bank of Baroda", "exchange": "NSE", "aliases": ["bank of baroda", "bob"]},
+    {"symbol": "YESBANK.NS", "name": "Yes Bank Limited", "exchange": "NSE", "aliases": ["yes bank", "yesbank"]},
+    {"symbol": "KOTAKBANK.NS", "name": "Kotak Mahindra Bank", "exchange": "NSE", "aliases": ["kotak", "kotak bank"]},
+    {"symbol": "AXISBANK.NS", "name": "Axis Bank Limited", "exchange": "NSE", "aliases": ["axis", "axis bank"]},
+    {"symbol": "VEDL.NS", "name": "Vedanta Limited", "exchange": "NSE", "aliases": ["vedanta", "vedl"]},
+    {"symbol": "VBL.NS", "name": "Varun Beverages Limited", "exchange": "NSE", "aliases": ["varun beverages", "vbl", "pepsi"]},
+    {"symbol": "ASIANPAINT.NS", "name": "Asian Paints Limited", "exchange": "NSE", "aliases": ["asian paints", "asian paint"]},
+    {"symbol": "NESTLEIND.NS", "name": "Nestle India Limited", "exchange": "NSE", "aliases": ["nestle", "maggi"]},
+    {"symbol": "ULTRACEMCO.NS", "name": "UltraTech Cement Limited", "exchange": "NSE", "aliases": ["ultratech", "cement"]},
+
+    # Popular US Stocks
+    {"symbol": "AAPL", "name": "Apple Inc.", "exchange": "NASDAQ", "aliases": ["apple", "iphone", "mac"]},
+    {"symbol": "MSFT", "name": "Microsoft Corporation", "exchange": "NASDAQ", "aliases": ["microsoft", "windows", "azure"]},
+    {"symbol": "GOOGL", "name": "Alphabet Inc. (Google)", "exchange": "NASDAQ", "aliases": ["google", "alphabet", "youtube"]},
+    {"symbol": "AMZN", "name": "Amazon.com Inc.", "exchange": "NASDAQ", "aliases": ["amazon", "aws"]},
+    {"symbol": "TSLA", "name": "Tesla Inc.", "exchange": "NASDAQ", "aliases": ["tesla", "elon musk"]},
+    {"symbol": "NVDA", "name": "NVIDIA Corporation", "exchange": "NASDAQ", "aliases": ["nvidia", "ai chip"]},
+    {"symbol": "META", "name": "Meta Platforms Inc.", "exchange": "NASDAQ", "aliases": ["meta", "facebook", "instagram"]},
+    {"symbol": "NFLX", "name": "Netflix Inc.", "exchange": "NASDAQ", "aliases": ["netflix"]}
+]
+
 def search_tickers_by_name(query: str) -> list[dict]:
     """
-    Search Yahoo Finance autocomplete API for stock tickers matching a text query (name or symbol).
-    Returns a list of dicts: [{'symbol': 'AAPL', 'name': 'Apple Inc.', 'exchange': 'NMS'}]
+    Search for stock tickers matching a user's natural query (company name, alias, or ticker symbol).
+    Combines curated instant-match recommendations with Yahoo Finance autocomplete API.
+    Returns a list of dicts: [{'symbol': 'RVNL.NS', 'name': 'Rail Vikas Nigam Limited', 'exchange': 'NSE', 'label': '...'}]
     """
-    query = query.strip()
-    if not query:
+    query_clean = query.strip()
+    if not query_clean:
         return []
+
+    q_lower = query_clean.lower()
+    results = []
+    seen_symbols = set()
+
+    # 1. First priority: Check local curated catalog for exact / alias matches
+    for s in POPULAR_STOCKS:
+        matched = False
+        if q_lower in s["name"].lower() or q_lower in s["symbol"].lower():
+            matched = True
+        elif any(q_lower in a or a in q_lower for a in s.get("aliases", [])):
+            matched = True
         
-    url = f"https://query2.finance.yahoo.com/v1/finance/search?q={query}&quotesCount=8&newsCount=0"
-    headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.0.0 Safari/537.36"
-    }
+        if matched and s["symbol"] not in seen_symbols:
+            seen_symbols.add(s["symbol"])
+            results.append({
+                "symbol": s["symbol"],
+                "name": s["name"],
+                "exchange": s["exchange"],
+                "type": "EQUITY",
+                "label": f"{s['name']} ({s['symbol']}) - {s['exchange']}"
+            })
+
+    # 2. Second priority: Query Yahoo Finance search API for broad coverage
     try:
-        response = requests.get(url, headers=headers, timeout=5)
+        url = "https://query2.finance.yahoo.com/v1/finance/search"
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+        }
+        params = {"q": query_clean, "quotesCount": 10, "newsCount": 0}
+        response = requests.get(url, params=params, headers=headers, timeout=5)
         if response.status_code == 200:
             data = response.json()
             quotes = data.get("quotes", [])
-            results = []
             for q in quotes:
                 quote_type = q.get("quoteType", "")
-                if quote_type in ["EQUITY", "ETF", "INDEX"]:
+                sym = q.get("symbol")
+                if quote_type in ["EQUITY", "ETF", "INDEX"] and sym and sym not in seen_symbols:
+                    name = q.get("shortname") or q.get("longname") or sym
+                    exchange = q.get("exchange", "N/A")
+                    seen_symbols.add(sym)
                     results.append({
-                        "symbol": q.get("symbol"),
-                        "name": q.get("shortname", q.get("longname", q.get("symbol"))),
-                        "exchange": q.get("exchange", "N/A"),
-                        "type": quote_type
+                        "symbol": sym,
+                        "name": name,
+                        "exchange": exchange,
+                        "type": quote_type,
+                        "label": f"{name} ({sym}) - {exchange}"
                     })
-            return results
     except Exception:
         pass
-    return []
+
+    return results
+
+@st.cache_data(ttl=600)
+def get_market_news() -> list[dict]:
+    """
+    Fetch the latest market news headlines from top market leaders.
+    Supports both modern and legacy yfinance response structures.
+    """
+    news_items = []
+    seen_titles = set()
+    # Market drivers for fresh financial news
+    leader_tickers = ["RELIANCE.NS", "TCS.NS", "INFY.NS", "HDFCBANK.NS"]
+    
+    for ticker_sym in leader_tickers:
+        try:
+            raw = yf.Ticker(ticker_sym).news
+            if raw:
+                for item in raw:
+                    # Check new yfinance structure
+                    content = item.get("content", {})
+                    if content:
+                        title = content.get("title")
+                        pub = content.get("provider", {}).get("displayName", "Financial News")
+                        url = (content.get("canonicalUrl") or {}).get("url") or (content.get("clickThroughUrl") or {}).get("url") or "#"
+                    else:
+                        title = item.get("title")
+                        pub = item.get("publisher", "Financial News")
+                        url = item.get("link", "#")
+                        
+                    if title and title not in seen_titles:
+                        seen_titles.add(title)
+                        news_items.append({
+                            "title": title,
+                            "publisher": pub,
+                            "link": url
+                        })
+                    if len(news_items) >= 5:
+                        return news_items
+        except Exception:
+            continue
+            
+    return news_items
 
 @st.cache_data(ttl=600)
 def get_sector_performance() -> list[dict]:
