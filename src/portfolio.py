@@ -42,7 +42,7 @@ def add_portfolio_transaction(db: Session, user_id: int, symbol: str, transactio
         )
         db.add(new_transaction)
         db.commit()
-        return True, f"Successfully logged {transaction_type} of {shares} shares of {symbol} at ${price:.2f}."
+        return True, f"Successfully logged {transaction_type} of {shares} shares of {symbol} at ₹{price:,.2f}."
     except Exception as e:
         db.rollback()
         return False, f"Failed to record transaction: {str(e)}"

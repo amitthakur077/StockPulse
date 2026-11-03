@@ -16,15 +16,15 @@ def generate_comparison_table(symbols: list[str]) -> pd.DataFrame:
         if not info:
             continue
             
-        # Format values nicely
+        # Format values nicely — all prices in ₹
         mcap = info.get("market_cap")
         if mcap:
             if mcap >= 1e12:
-                mcap_str = f"${mcap / 1e12:.2f}T"
+                mcap_str = f"₹{mcap / 1e7:.2f} Cr"
             elif mcap >= 1e9:
-                mcap_str = f"${mcap / 1e9:.2f}B"
+                mcap_str = f"₹{mcap / 1e7:.2f} Cr"
             else:
-                mcap_str = f"${mcap / 1e6:.2f}M"
+                mcap_str = f"₹{mcap / 1e5:.2f} L"
         else:
             mcap_str = "N/A"
             
@@ -35,13 +35,13 @@ def generate_comparison_table(symbols: list[str]) -> pd.DataFrame:
         div_str = f"{div * 100:.2f}%" if div else "0.00%"
         
         curr_price = info.get("current_price")
-        curr_price_str = f"${curr_price:.2f}" if curr_price is not None else "N/A"
+        curr_price_str = f"₹{curr_price:,.2f}" if curr_price is not None else "N/A"
         
         high_52w = info.get("fifty_two_week_high")
-        high_str = f"${high_52w:.2f}" if high_52w is not None else "N/A"
+        high_str = f"₹{high_52w:,.2f}" if high_52w is not None else "N/A"
         
         low_52w = info.get("fifty_two_week_low")
-        low_str = f"${low_52w:.2f}" if low_52w is not None else "N/A"
+        low_str = f"₹{low_52w:,.2f}" if low_52w is not None else "N/A"
         
         data.append({
             "Ticker": sym.upper(),
