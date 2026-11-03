@@ -42,7 +42,7 @@ def generate_markdown_report(symbol: str, info: dict, df: pd.DataFrame) -> str:
         else:
             trend_status = "🟡 Moderately Bearish (Price is below 50-day SMA)"
 
-    report = f"""# StockPulse analysis Report: {symbol}
+    report = f"""# StockPulse Analysis Report: {symbol}
 **Generated on:** {now_str}
 **Company Name:** {info.get("name", symbol)}
 **Sector / Industry:** {info.get("sector", "N/A")} / {info.get("industry", "N/A")}
@@ -50,18 +50,18 @@ def generate_markdown_report(symbol: str, info: dict, df: pd.DataFrame) -> str:
 ---
 
 ## 📈 Financial Overview
-- **Current Trading Price:** {info.get("currency", "USD")} {current_price:.2f}
-- **Market Capitalization:** {info.get("market_cap", 0.0):,}
+- **Current Trading Price:** ₹{current_price:,.2f}
+- **Market Capitalization:** ₹{info.get("market_cap", 0.0) / 1e7:,.2f} Crore
 - **Price-to-Earnings (P/E) Ratio:** {info.get("pe_ratio") if info.get("pe_ratio") is not None else "N/A"}
 - **Dividend Yield:** {info.get("dividend_yield", 0.0) * 100:.2f}%
-- **52-Week Range:** ${info.get("fifty_two_week_low", 0.0):.2f} - ${info.get("fifty_two_week_high", 0.0):.2f}
+- **52-Week Range:** ₹{info.get("fifty_two_week_low", 0.0):,.2f} - ₹{info.get("fifty_two_week_high", 0.0):,.2f}
 
 ---
 
 ## 🛠️ Technical Indicator Summary
 - **Relative Strength Index (RSI - 14):** {f"{rsi:.2f}" if rsi else "N/A"} -> **{rsi_status}**
-- **50-Day Simple Moving Average (SMA):** {f"${sma_50:.2f}" if sma_50 else "N/A"}
-- **200-Day Simple Moving Average (SMA):** {f"${sma_200:.2f}" if sma_200 else "N/A"}
+- **50-Day Simple Moving Average (SMA):** {f"₹{sma_50:,.2f}" if sma_50 else "N/A"}
+- **200-Day Simple Moving Average (SMA):** {f"₹{sma_200:,.2f}" if sma_200 else "N/A"}
 - **Overall Trend Posture:** {trend_status}
 
 ---

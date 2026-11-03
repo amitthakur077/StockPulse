@@ -227,21 +227,36 @@ def render_metric_card(label: str, value: str, change: str = None, is_positive: 
     """
     st.markdown(card_html, unsafe_allow_html=True)
 
-def get_currency_symbol(currency_code: str) -> str:
+def get_currency_symbol(currency_code: str = None) -> str:
     """
-    Map ISO currency codes to visual symbols.
+    Standardize all financial prices to Indian Rupees (₹).
     """
-    if not currency_code:
-        return "$"
-    mapping = {
-        "USD": "$",
-        "INR": "₹",
-        "EUR": "€",
-        "GBP": "£",
-        "JPY": "¥",
-        "CAD": "C$",
-        "AUD": "A$",
-        "CNY": "¥"
-    }
-    return mapping.get(currency_code.upper(), currency_code)
+    return "₹"
+
+def render_stock_search_bar(key: str = "stock_search", placeholder: str = "Search company name (e.g. Rail nigam, Reliance, Tata Motors, Apple)...", default_ticker: str = None) -> str | None:
+    """
+    Renders an intuitive autocomplete company name search component with recommendations.
+    Returns the selected stock ticker symbol.
+    """
+    from src.stock_api import search_tickers_by_name
+
+    search_query = st.text_input(
+        "Search Company by Name or Ticker",
+        placeholder=placeholder,
+        key=f"{key}_query"
+    )
+
+    selected_symbol = default_ticker
+    if search_query:
+        matches = search_tickers_by_name(search_query)
+        if matches:
+            labels = [m["label"] for m in matches]
+            choice = st.selectbox("💡 Recommended companies:", options=labels, key=f"{key}_select")
+            if choice:
+                selected_symbol = matches[labels.index(choice)]["symbol"]
+        else:
+            st.warning("No matching company found. Try searching by another name or alias (e.g. 'Rail nigam', 'Tata', 'Reliance').")
+            
+    return selected_symbol
+
 
